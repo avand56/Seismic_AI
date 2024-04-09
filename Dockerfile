@@ -33,9 +33,9 @@ RUN pip install numpy scipy matplotlib ipython jupyter pandas sympy nose
 # Set the working directory
 WORKDIR /workspace
 
-# Copy your models' code and any additional files required into the Docker image
-# This step will depend on your project's structure
-# COPY ./your_model_directory /workspace/your_model_directory
+# need to put models' code and any additional files required into the Docker image here
+# depend on project's structure
+# COPY ./model_directory /workspace/model_directory
 
 # Command to run when starting the container
 CMD ["bash"]
