@@ -3,7 +3,7 @@ from sklearn.decomposition import PCA
 import numpy as np
 import pandas as pd
 import keras as ks
-from keras import layers, models
+from keras import layers, models, optimizers
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.cluster import KMeans
 from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
@@ -11,6 +11,110 @@ import tensorflow_probability as tfp
 import umap 
 import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
+from keras.optimizers.schedules import ExponentialDecay
+from keras.optimizers import Adam
+from keras.callbacks import ReduceLROnPlateau
+
+class Contrastive1DCNNModel(tf.keras.Model):
+    def __init__(self, input_shape, feature_dim):
+        """
+        Initializes the contrastive learning model for time series data.
+
+        Args:
+        - input_shape (tuple): Shape of the input time series data (time_steps, num_features).
+        - feature_dim (int): Dimensionality of the output embedding.
+        """
+        super(Contrastive1DCNNModel, self).__init__()
+        self.input_shape = input_shape
+        self.feature_dim = feature_dim
+        self.model = self._build_model()
+
+    # def __init__(self, input_shape, feature_dim, num_filters=[64, 128, 256], kernel_sizes=[7, 5, 3], dropout_rate=0.5):
+    #     super(Contrastive1DCNNModel, self).__init__()
+    #     self.input_shape = input_shape
+    #     self.feature_dim = feature_dim
+    #     self.layers_list = []
+    #     for filters, kernel_size in zip(num_filters, kernel_sizes):
+    #         self.layers_list.append(layers.Conv1D(filters=filters, kernel_size=kernel_size, activation='relu', padding='same'))
+    #         self.layers_list.append(layers.MaxPooling1D(pool_size=2))
+    #         self.layers_list.append(layers.Dropout(dropout_rate))
+    #     self.layers_list.append(layers.GlobalAveragePooling1D())
+    #     self.layers_list.append(layers.Dense(feature_dim, activation='linear'))
+
+    def _build_model(self):
+        """
+        Builds a 1D CNN architecture suitable for extracting features from time series data.
+        """
+        model = models.Sequential([
+            layers.Input(shape=self.input_shape),
+            layers.Conv1D(filters=64, kernel_size=7, activation='relu', padding='same'),
+            layers.MaxPooling1D(pool_size=2),
+            layers.Conv1D(filters=128, kernel_size=5, activation='relu', padding='same'),
+            layers.MaxPooling1D(pool_size=2),
+            layers.Conv1D(filters=256, kernel_size=3, activation='relu', padding='same'),
+            layers.GlobalAveragePooling1D(),
+            layers.Dense(self.feature_dim, activation='linear')  # Output embeddings
+        ])
+        return model
+
+    def call(self, inputs):
+        # Process each sequence in the pair separately
+        processed_a = self.model(inputs[:, 0, :, :])  # Process the first sequence in each pair
+        processed_b = self.model(inputs[:, 1, :, :])  # Process the second sequence in each pair
+        return processed_a, processed_b
+        # return self.model(inputs)
+    # def call(self, inputs):
+    #     x = inputs
+    #     for layer in self.layers_list:
+    #         x = layer(x)
+    #     return x
+
+    def compile_model(self, initial_learning_rate=0.001, decay_rate=0.96):
+
+        initial_learning_rate = initial_learning_rate
+        lr_schedule = ExponentialDecay(
+            initial_learning_rate,
+            decay_steps=100000,
+            decay_rate=decay_rate,
+            staircase=True)
+
+        optimizer = Adam(learning_rate=lr_schedule)
+        self.compile(optimizer=optimizer, loss=contrastive_loss)  # Define the appropriate contrastive loss
+
+    def train_model(self, dataset, epochs=10, initial_learning_rate=0.001, decay_rate=0.96):
+        self.compile_model(initial_learning_rate,decay_rate)
+        self.fit(dataset, epochs=epochs)
+
+    def get_embeddings(self, model, dataset):
+        embeddings = model.predict(dataset)
+        return embeddings
+    
+    def cluster_embeddings(self,embeddings, method='kmeans', n_clusters=5, linkage_method='ward'):
+        """
+        Cluster embeddings using K-means or hierarchical clustering.
+
+        Args:
+        - embeddings (np.array): The embeddings to cluster, shape (n_samples, n_features).
+        - method (str): The clustering method to use ('kmeans' or 'hierarchical').
+        - n_clusters (int): The number of clusters to form.
+        - linkage_method (str): The linkage criterion for hierarchical clustering ('ward', 'single', 'complete', 'average').
+
+        Returns:
+        - cluster_labels (np.array): An array of cluster labels for each embedding.
+        """
+        if method == 'kmeans':
+            # Use K-means clustering
+            kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+            cluster_labels = kmeans.fit_predict(embeddings)
+        elif method == 'hierarchical':
+            # Use hierarchical/agglomerative clustering
+            Z = linkage(embeddings, method=linkage_method)
+            cluster_labels = fcluster(Z, t=n_clusters, criterion='maxclust')
+        else:
+            raise ValueError("Unsupported clustering method. Choose 'kmeans' or 'hierarchical'.")
+
+        return cluster_labels
+
 
 class ContrastiveTimeSeriesModel:
     def __init__(self, input_shape, feature_dim=64):
@@ -30,18 +134,44 @@ class ContrastiveTimeSeriesModel:
         Builds the shared 1D CNN architecture for feature extraction.
         """
         inputs = tf.keras.Input(shape=self.input_shape)
-        x = TimeSeriesAugmentation()(inputs, training=True)
+        #x = self.simple_augmentation(inputs)
+        # Use the custom noise layer
+        x = AddGaussianNoise(mean=0.0, stddev=0.05)(inputs, training=True)  # Training-specific behavior
+        # x = TimeSeriesAugmentation()(inputs, training=True)
         x = layers.Conv1D(32, 7, activation='relu', padding='same')(inputs)
         x = layers.MaxPooling1D(2)(x)
         x = layers.Conv1D(64, 5, activation='relu', padding='same')(x)
         x = layers.MaxPooling1D(2)(x)
         x = layers.Conv1D(128, 3, activation='relu', padding='same')(x)
         x = layers.GlobalAveragePooling1D()(x)
-        outputs = layers.Dense(self.feature_dim, activation='softmax')(x)
+        outputs = layers.Dense(self.feature_dim, activation=None)(x) # No activation on final embedding layer
 
         model = models.Model(inputs=inputs, outputs=outputs)
         return model
     
+    
+    def _build_model_2d(self, input_shape, feature_dim):
+            """
+            Builds the 2D CNN architecture for feature extraction.
+
+            Args:
+            - input_shape (tuple): Shape of the input data.
+            - feature_dim (int): Dimensionality of the output embedding.
+
+            Returns:
+            - A Keras model representing the base 2D CNN architecture.
+            """
+            model = models.Sequential([
+                layers.Input(shape=input_shape),
+                layers.Conv2D(64, kernel_size=(3, 3, 3), activation='relu', padding='same'),
+                layers.MaxPooling2D(pool_size=(2, 2, 2)),
+                layers.Conv2D(128, kernel_size=(3, 3, 3), activation='relu', padding='same'),
+                layers.MaxPooling2D(pool_size=(2, 2, 2)),
+                layers.Conv3D(256, kernel_size=(3, 3, 3), activation='relu', padding='same'),
+                layers.GlobalAveragePooling2D(),
+                layers.Dense(feature_dim, activation=None),  # No activation on final embedding layer
+            ])
+            return model
 
     def _build_model_3d(self, input_shape, feature_dim):
         """
@@ -76,7 +206,7 @@ class ContrastiveTimeSeriesModel:
         """
         self.model.compile(optimizer=optimizer, loss=loss)
 
-    def train(self, dataset, epochs=1, batch_size=32):
+    def train(self, dataset, epochs=10, batch_size=32):
         """
         Trains the model on the provided dataset.
 
@@ -187,6 +317,13 @@ class ContrastiveTimeSeriesModel:
         
         return loss
     
+    def triplet_loss(self, y_true, y_pred, alpha=0.4):
+        anchor, positive, negative = y_pred[:, 0], y_pred[:, 1], y_pred[:, 2]
+        positive_distance = tf.reduce_mean(tf.square(anchor - positive), axis=1)
+        negative_distance = tf.reduce_mean(tf.square(anchor - negative), axis=1)
+        loss = tf.maximum(positive_distance - negative_distance + alpha, 0.0)
+        return tf.reduce_mean(loss)
+        
 
     def generate_contrastive_pairs(self, dataset, window_size, step_size, num_negative_pairs, augmentation_func=None):
         """
@@ -213,6 +350,8 @@ class ContrastiveTimeSeriesModel:
             
             # Negative pair placeholders (to be generated later)
             neg_pairs = tf.TensorArray(dtype=tf.float32, size=num_negative_pairs, dynamic_size=False)
+
+
             neg_labels = tf.TensorArray(dtype=tf.int32, size=num_negative_pairs, dynamic_size=False)
             
             # Dummy operation, replace with actual negative pair generation logic
@@ -230,47 +369,72 @@ class ContrastiveTimeSeriesModel:
         return pair_dataset
 
 
-    def generate_triplets(dataset, window_size=None, step_size=None, num_triplets=1000, augmentation_func=None):
+    def generate_triplets(self, data, num_triplets):
         """
-        Generate triplets for contrastive learning from a dataset of time series data,
-        with optional windowing.
+        Generate triplets for training with a triplet loss function.
         
         Args:
-        - dataset: A tf.data.Dataset instance containing time series data.
-        - window_size: The size of each window/subsequence to generate (optional).
-        - step_size: The step size between windows for the sliding window mechanism (optional).
+        - data: Numpy array of shape (num_samples, sequence_length, num_features).
         - num_triplets: Number of triplets to generate.
-        - augmentation_func: Function to apply augmentation to generate a positive example.
         
         Returns:
-        - A tf.data.Dataset instance containing triplets (anchor, positive, negative).
+        - triplets: Numpy array of shape (num_triplets, 3, sequence_length, num_features),
+          where the second dimension includes the anchor, positive, and negative samples.
         """
-        def create_windows(time_series):
-            # Assume the function returns a dataset of windows if windowing is applied
-            return time_series.window(size=window_size, shift=step_size, drop_remainder=True).flat_map(lambda w: w.batch(window_size))
+        num_samples = data.shape[0]
+        triplets = []
         
-        def create_triplets(subsequence):
-            # Anchor and positive are the same subsequence with and without augmentation
-            anchor = subsequence
-            positive = augmentation_func(subsequence) if augmentation_func else subsequence
+        for _ in range(num_triplets):
+            # Randomly choose anchor and positive, and ensure they are different
+            anchor_idx, positive_idx = np.random.choice(num_samples, size=2, replace=False)
+            anchor = data[anchor_idx]
+            positive = data[positive_idx]
+
+            # Generate a negative sample
+            # Choose a negative example that is different from the anchor
+            possible_negatives = [i for i in range(num_samples) if i not in [anchor_idx, positive_idx]]
+            negative_idx = np.random.choice(possible_negatives)
+            negative = data[negative_idx]
             
-            # Assuming dataset provides multiple examples to choose a negative from
-            # The negative example should be different from the anchor/positive
-            negative = dataset.filter(lambda x: not tf.reduce_all(tf.equal(x, subsequence))).take(1)
+            triplets.append([anchor, positive, negative])
+        
+        return np.array(triplets)
+    
+    def generate_pairs(self, data, num_positive_pairs, num_negative_pairs):
+        """
+        Generate positive and negative pairs from the data.
+        
+        Args:
+        - data: Numpy array of shape (num_samples, sequence_length, num_features).
+        - num_positive_pairs: Number of positive pairs to generate.
+        - num_negative_pairs: Number of negative pairs to generate.
+        
+        Returns:
+        - pairs: Numpy array of shape (num_pairs, 2, sequence_length, num_features).
+        - pair_labels: Numpy array with 1s for positive pairs and 0s for negative pairs.
+        """
+        num_samples = data.shape[0]
+        pairs = []
+        labels = []
+        
+        # Generate positive pairs
+        for _ in range(num_positive_pairs):
+            idx = np.random.randint(0, num_samples)
+            original = data[idx]
             
-            # Return a triplet (anchor, positive, negative)
-            return tf.data.Dataset.from_tensors((anchor, positive, negative))
-        
-        # Apply optional windowing
-        if window_size and step_size:
-            windowed_dataset = dataset.flat_map(lambda x: create_windows(x))
-        else:
-            windowed_dataset = dataset
-        
-        # Generate triplets
-        triplet_dataset = windowed_dataset.flat_map(create_triplets).take(num_triplets)
-        
-        return triplet_dataset
+            # Simple augmentation: adding slight noise
+            augmented = original + np.random.normal(loc=0.0, scale=0.01, size=original.shape)
+            
+            pairs.append([original, augmented])
+            labels.append(1)  # 1 indicates a positive pair
+            
+        # Generate negative pairs
+        for _ in range(num_negative_pairs):
+            idx1, idx2 = np.random.choice(num_samples, size=2, replace=False)
+            pairs.append([data[idx1], data[idx2]])
+            labels.append(0)  # 0 indicates a negative pair
+            
+        return np.array(pairs), np.array(labels)
 
 
     # simple augmentation function: adding random noise
@@ -428,6 +592,89 @@ class TimeSeriesAugmentation(tf.keras.layers.Layer):
         plt.ylabel(f'{method.upper()} 2')
         plt.show()
 
+class AddGaussianNoise(layers.Layer):
+    def __init__(self, mean=0.0, stddev=0.05, **kwargs):
+        super(AddGaussianNoise, self).__init__(**kwargs)
+        self.mean = mean
+        self.stddev = stddev
+
+    def call(self, inputs, training=None):
+        if training:
+            noise = tf.random.normal(shape=tf.shape(inputs), mean=self.mean, stddev=self.stddev)
+            return inputs + noise
+        return inputs
+
+    def get_config(self):
+        config = super(AddGaussianNoise, self).get_config()
+        config.update({
+            "mean": self.mean,
+            "stddev": self.stddev
+        })
+        return config
+    
+
+def contrastive_loss(y_true, y_pred, margin=1.0):
+    positive_distance, negative_distance = y_pred[:, 0], y_pred[:, 1]
+    loss = tf.maximum(positive_distance - negative_distance + margin, 0)
+    return tf.reduce_mean(loss)
+
+
+def augment_time_series(series, noise_level=0.05):
+    """
+    Augment a time series by adding Gaussian noise.
+
+    Args:
+    - series (np.array): The original time series data.
+    - noise_level (float): Standard deviation of the Gaussian noise.
+
+    Returns:
+    - np.array: Augmented time series.
+    """
+    noise = np.random.normal(loc=0.0, scale=noise_level, size=series.shape)
+    return series + noise
+
+
+def generate_pairs(data, num_pairs=1000, positive_ratio=0.5):
+    """
+    Generate positive and negative pairs for contrastive learning.
+
+    Args:
+    - data (np.array): Array of seismic data samples, shape (num_samples, sequence_length, num_features).
+    - num_pairs (int): Total number of pairs to generate.
+    - positive_ratio (float): Proportion of positive pairs.
+
+    Returns:
+    - pairs (np.array): Array of data pairs.
+    - labels (np.array): Array of labels (1 for positive, 0 for negative).
+    """
+    num_samples = data.shape[0]
+    num_positive = int(num_pairs * positive_ratio)
+    num_negative = num_pairs - num_positive
+    
+    pairs = []
+    labels = []
+    
+    # Generate positive pairs
+    for _ in range(num_positive):
+        idx = np.random.randint(num_samples)
+        original = data[idx]
+        augmented = augment_time_series(original)
+        
+        pairs.append([original, augmented])
+        labels.append(1)
+    
+    # Generate negative pairs
+    for _ in range(num_negative):
+        idx1, idx2 = np.random.choice(num_samples, size=2, replace=False)
+        
+        pairs.append([data[idx1], data[idx2]])
+        labels.append(0)
+
+    pairs = np.array(pairs)
+    labels = np.array(labels)
+
+    return pairs, labels
+
 # Example: Compute similarity matrix
 # embeddings = get_embeddings(model, data_for_prediction)
 # similarity_matrix = cosine_similarity(embeddings)
@@ -454,24 +701,6 @@ class TimeSeriesAugmentation(tf.keras.layers.Layer):
 # model.train(train_dataset, epochs=10, batch_size=32)
 
 
-# Instantiate and compile the model
-input_shape = (128, 1)  # Example input shape (time_steps, num_features=1)
-model = ContrastiveTimeSeriesModel(input_shape=input_shape, feature_dim=64)
-model.compile(optimizer='adam', loss=model.enhanced_triplet_loss(batch_margin=0.5))
-triplet_dataset= model.generate_triplets(dataset, window_size=None, step_size=None, num_triplets=1000, augmentation_func=None)
-model.fit(triplet_dataset, epochs=100, steps_per_epoch=200)
-embeddings = model.get_embeddings(model, dataset)
-# Cluster the embeddings using K-means
-cluster_labels_kmeans = model.cluster_embeddings(embeddings, method='kmeans', n_clusters=5)
-
-# Or cluster the embeddings using hierarchical clustering
-cluster_labels_hierarchical = model.cluster_embeddings(embeddings, method='hierarchical', n_clusters=5, linkage_method='ward')
-
-# Visualize using t-SNE
-model.visualize_clusters(embeddings, cluster_labels_kmeans, method='tsne')
-
-# Visualize using UMAP
-model.visualize_clusters(embeddings, cluster_labels_hierarchical, method='umap')
 
 
 
