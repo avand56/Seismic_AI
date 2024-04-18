@@ -35,6 +35,22 @@ def visualize_seismic_data(seismic_data):
     plt.title('Seismic Data')
     plt.show()
 
+def plot_aline(aline, labels, xlabel, ylabel="depth"):
+    """Plot a section of the data."""
+    plt.figure(figsize=(18, 6))
+    # data
+    plt.subplot(1, 2, 1)
+    plt.imshow(aline)
+    plt.title("Data")
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    # mask
+    plt.subplot(1, 2, 2)
+    plt.imshow(labels)
+    plt.xlabel(xlabel)
+    plt.title("Label")
+
+    
 def find_max_trace_length(file_path):
     """
     Finds the maximum trace length in a SEG-Y file.
