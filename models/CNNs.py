@@ -6,31 +6,37 @@ from keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 import numpy as np
 import argparse
+import matplotlib.pyplot as plt
+
 
 class UNet:
-    def __init__(self, input_shape, num_classes, dimensionality=2):
+    def __init__(self, input_shape, num_classes, filters, dimensionality=2):
         """
-        Initializes a U-Net model for 2D or 3D data.
+        Initializes a flexible U-Net model for 2D or 3D data.
 
         Args:
-        - input_shape (tuple): Shape of the input data, including channels. For 2D, it should be (height, width, channels), and for 3D, (depth, height, width, channels).
+        - input_shape (tuple): Shape of the input data, including channels. 
+                               For 2D, it should be (height, width, channels), 
+                               and for 3D, (depth, height, width, channels).
         - num_classes (int): The number of output classes.
+        - filters (list): List of integers where each integer specifies the 
+                          number of filters in consecutive layers of the encoder.
+                          The decoder will use the reverse order.
         - dimensionality (int): The dimensionality of the data (2 for 2D data and 3 for 3D data).
         """
         self.input_shape = input_shape
         self.num_classes = num_classes
         self.dimensionality = dimensionality
+        self.filters = filters
 
         if dimensionality == 2:
             self.Conv = layers.Conv2D
             self.ConvTranspose = layers.Conv2DTranspose
             self.MaxPooling = layers.MaxPooling2D
-            self.UpSampling = layers.UpSampling2D
         elif dimensionality == 3:
             self.Conv = layers.Conv3D
             self.ConvTranspose = layers.Conv3DTranspose
             self.MaxPooling = layers.MaxPooling3D
-            self.UpSampling = layers.UpSampling3D
         else:
             raise ValueError("Dimensionality must be either 2 or 3.")
 
@@ -59,28 +65,29 @@ class UNet:
     def build_model(self):
         """Builds the U-Net model."""
         inputs = layers.Input(shape=self.input_shape)
-
-        # Encoder
         skips = []
         x = inputs
-        for num_filters in [64, 128, 256, 512]:
+
+        # Encoder - defined by the filters list
+        for num_filters in self.filters:
             x, x_pool = self.encoder_block(x, num_filters)
             skips.append(x)
             x = x_pool
 
         # Bridge
-        x = self.conv_block(x, 1024)
+        x = self.conv_block(x, self.filters[-1] * 2)  # Assuming the bridge doubles the filter amount
 
-        # Decoder
-        for i, num_filters in enumerate([512, 256, 128, 64]):
+        # Decoder - reverse of the encoder
+        for i, num_filters in enumerate(reversed(self.filters)):
             x = self.decoder_block(x, skips[::-1][i], num_filters)
 
         # Output layer
         outputs = self.Conv(self.num_classes, 1, activation='softmax', padding='same')(x)
-
-        model = models.Model(inputs, outputs, name="U-Net")
+        model = models.Model(inputs=inputs, outputs=outputs, name="U-Net")
         return model
-    def prepare_data(self, image_dir, mask_dir, image_size, num_classes, test_size=0.2, batch_size=32):
+
+    
+    def prepare_data(self, image_dir, mask_dir, image_size, num_classes, test_size=0.1,val_size=0.1, batch_size=32):
         """
         Prepares training and validation datasets from image and mask directories.
 
@@ -115,13 +122,52 @@ class UNet:
         masks = np.array(masks)
 
         # Split the dataset into training and validation
-        X_train, X_val, y_train, y_val = train_test_split(images, masks, test_size=test_size, random_state=42)
+        X_train_val, X_test, y_train_val, y_test = train_test_split(
+            images, masks, test_size=test_size, random_state=42)
+
+        # Split training + validation into training and validation sets
+        X_train, X_val, y_train, y_val = train_test_split(
+            X_train_val, y_train_val, test_size=val_size, random_state=42)
+        
+        # X_train, X_val, y_train, y_val = train_test_split(images, masks, test_size=test_size, random_state=42)
 
         # Create TensorFlow datasets
         train_dataset = tf.data.Dataset.from_tensor_slices((X_train, y_train)).batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE)
         val_dataset = tf.data.Dataset.from_tensor_slices((X_val, y_val)).batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE)
+        test_dataset = tf.data.Dataset.from_tensor_slices((X_test, y_test)).batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE)
 
-        return train_dataset, val_dataset
+        return train_dataset, val_dataset, test_dataset
+    
+    
+    def visualize_predictions(self, dataset, num_examples=3):
+        """
+        Visualizes predictions for a subset of examples from the dataset.
+
+        Args:
+        - dataset: A tf.data.Dataset object containing data and labels.
+        - num_examples (int): Number of examples to visualize.
+        """
+        plt.figure(figsize=(10, num_examples * 3))
+        for images, labels in dataset.take(1):
+            preds = self.predict(images)
+            preds = tf.argmax(preds, axis=-1)
+            for i in range(num_examples):
+                plt.subplot(num_examples, 3, i * 3 + 1)
+                plt.imshow(images[i].numpy().squeeze(), cmap='gray')
+                plt.title("Input")
+                plt.axis('off')
+
+                plt.subplot(num_examples, 3, i * 3 + 2)
+                plt.imshow(labels[i].numpy().squeeze(), cmap='gray')
+                plt.title("True")
+                plt.axis('off')
+
+                plt.subplot(num_examples, 3, i * 3 + 3)
+                plt.imshow(preds[i].numpy().squeeze(), cmap='gray')
+                plt.title("Predicted")
+                plt.axis('off')
+        plt.tight_layout()
+        plt.show()
 
 class ResNetSegmentation(models.Model):
     def __init__(self, input_shape, num_classes):

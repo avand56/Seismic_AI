@@ -62,13 +62,13 @@ class PatchLoader:
     
 
 # Example usage
-augmentations = [RandomHorizontallyFlip()]  # Define more augmentations as needed
-augmenter = DataAugmentation(augmentations)
-image_paths = ['path_to_image1.npy', 'path_to_image2.npy']  # Paths to your image data files
-mask_paths = ['path_to_mask1.npy', 'path_to_mask2.npy']  # Paths to your mask data files
-patch_loader = PatchLoader(image_paths, mask_paths, patch_size=(128, 128), batch_size=16, augment=augmenter)
+# augmentations = [RandomHorizontallyFlip()]  # Define more augmentations as needed
+# augmenter = DataAugmentation(augmentations)
+# image_paths = ['path_to_image1.npy', 'path_to_image2.npy']  # Paths to your image data files
+# mask_paths = ['path_to_mask1.npy', 'path_to_mask2.npy']  # Paths to your mask data files
+# patch_loader = PatchLoader(image_paths, mask_paths, patch_size=(128, 128), batch_size=16, augment=augmenter)
 
-# Accessing the dataset
-dataset = patch_loader.dataset
-for images, masks in dataset.take(1):
-    print(images.shape, masks.shape)  # Check the shapes
+# # Accessing the dataset
+# dataset = patch_loader.dataset
+# for images, masks in dataset.take(1):
+#     print(images.shape, masks.shape)  # Check the shapes
