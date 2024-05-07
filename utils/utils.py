@@ -5,6 +5,17 @@ from sklearn.preprocessing import StandardScaler
 from models.contrastive_learning import ContrastiveTimeSeriesModel
 import tensorflow as tf
 
+def tensor_length(dataset):
+    # Assuming 'dataset' is  TensorFlow Dataset
+    dataset_size = tf.data.experimental.cardinality(dataset).numpy()
+
+    if dataset_size == tf.data.experimental.INFINITE_CARDINALITY:
+        return print("The dataset is infinite.")
+    elif dataset_size == tf.data.experimental.UNKNOWN_CARDINALITY:
+        return print("The total size of the dataset is unknown.")
+    else:
+        return print(f"The dataset contains {dataset_size} elements.")
+
 def read_segy_file(file_path):
     """
     Reads a SEG-Y file and returns the seismic data. Note trace lengths need to be the same.

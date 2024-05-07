@@ -2,11 +2,43 @@ import math
 import numbers
 import random
 import numpy as np
-
 from PIL import Image, ImageOps
 
-# Define the augmentation class using PIL
-class DataAugmentation:
+
+class RandomHorizontallyFlip_np:
+    def __call__(self, img, mask):
+        if random.random() < 0.5:
+            return np.fliplr(img), np.fliplr(mask)
+        return img, mask
+
+class RandomVerticallyFlip_np:
+    def __call__(self, img, mask):
+        if random.random() < 0.5:
+            return np.flipud(img), np.flipud(mask)
+        return img, mask
+
+class AddNoise_np:
+    def __call__(self, img, mask):
+        noise = np.random.normal(0, 0.02, img.shape)  # Make sure noise shape matches image shape
+        return img + noise, mask
+
+class RandomRotate_np:
+    def __init__(self, degree):
+        self.degree = degree
+
+    def __call__(self, img, mask):
+        rotate_degree = random.uniform(-self.degree, self.degree)
+        img = self.rotate_image(img, rotate_degree)
+        mask = self.rotate_image(mask, rotate_degree, mode='nearest')
+        return img, mask
+
+    def rotate_image(self, img, angle, mode='bilinear'):
+        # For simplicity, using scipy for rotation
+        from scipy.ndimage import rotate
+        return rotate(img, angle, reshape=False, order=1 if mode == 'bilinear' else 0)
+
+# Define the augmentation class using PIL on images
+class DataAugmentationImage:
     def __init__(self, augmentations):
         self.augmentations = augmentations
 

@@ -128,4 +128,3 @@ class SeismicGAN:
         fig.savefig(f"seismic_{epoch}.png")
         plt.close()
 
-

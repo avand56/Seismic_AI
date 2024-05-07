@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-@tf.function
+#@tf.function
 def evaluate_step(imgs, masks):
     predictions = model(imgs, training=False)  # Set training to False to ensure all layers are in inference mode
     # Compute loss
