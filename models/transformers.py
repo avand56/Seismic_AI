@@ -86,23 +86,27 @@ class TimeSeriesTransformer(tf.keras.Model):
 
 
 
-# Example usage with dropout and positional encodings
-num_features = 10  # Number of features in your time series data
-model_dim = 64  # Dimensionality of model embeddings
-num_heads = 4  # Number of attention heads
-num_encoder_layers = 6  # Number of encoder layers
-num_classes = 3  # Number of classes for classification
-dropout_rate = 0.1  # Dropout rate
-max_length = 100  # Maximum length of the time series sequences
+#########
+# to run
+#########    
+
+# # Example usage with dropout and positional encodings
+# num_features = 10  # Number of features in your time series data
+# model_dim = 64  # Dimensionality of model embeddings
+# num_heads = 4  # Number of attention heads
+# num_encoder_layers = 6  # Number of encoder layers
+# num_classes = 3  # Number of classes for classification
+# dropout_rate = 0.1  # Dropout rate
+# max_length = 100  # Maximum length of the time series sequences
 
 
 
-model = TimeSeriesTransformer(num_features, model_dim, num_heads, num_encoder_layers, num_classes, dropout_rate, max_length)
-model.build(input_shape=(None, max_length, num_features))  # Example input shape
-model.summary()
+# model = TimeSeriesTransformer(num_features, model_dim, num_heads, num_encoder_layers, num_classes, dropout_rate, max_length)
+# model.build(input_shape=(None, max_length, num_features))  # Example input shape
+# model.summary()
 
-optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
-loss = tf.keras.losses.CategoricalCrossentropy()
-metrics = ['accuracy']
+# optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
+# loss = tf.keras.losses.CategoricalCrossentropy()
+# metrics = ['accuracy']
 
-model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
+# model.compile(optimizer=optimizer, loss=loss, metrics=metrics)

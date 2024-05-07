@@ -109,41 +109,45 @@ class SeismicDiffusionModel(tf.keras.Model):
                     print(f"Epoch {epoch+1}, Step {step}, Loss: {loss.numpy()}")
 
 
-# Initialize the model
-model = SeismicDiffusionModel()
+############
+# To run
+############
+                                                            
+# # Initialize the model
+# model = SeismicDiffusionModel()
 
-# Assume optimizer and loss function are defined
-optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
-loss_fn = tf.keras.losses.MeanSquaredError()
+# # Assume optimizer and loss function are defined
+# optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
+# loss_fn = tf.keras.losses.MeanSquaredError()
 
 
-# Assuming `dataset` is a TensorFlow dataset of seismic images
-model.train_model(model, dataset, optimizer, loss_fn, epochs=10, num_noising_steps=10)
+# # Assuming `dataset` is a TensorFlow dataset of seismic images
+# model.train_model(model, dataset, optimizer, loss_fn, epochs=10, num_noising_steps=10)
 
 
-# Example usage with a sample image
-(sample_images, _), _ = tf.keras.datasets.mnist.load_data()
-sample_images = sample_images[:10] / 255.0  # Normalize
-sample_images = np.expand_dims(sample_images, axis=-1)  # Add channel dimension
+# # Example usage with a sample image
+# (sample_images, _), _ = tf.keras.datasets.mnist.load_data()
+# sample_images = sample_images[:10] / 255.0  # Normalize
+# sample_images = np.expand_dims(sample_images, axis=-1)  # Add channel dimension
 
-# Convert to TensorFlow tensor
-images_tensor = tf.convert_to_tensor(sample_images, dtype=tf.float32)
+# # Convert to TensorFlow tensor
+# images_tensor = tf.convert_to_tensor(sample_images, dtype=tf.float32)
 
-# Forward process
-noised_images = model.forward_process(images_tensor, num_steps=10)
+# # Forward process
+# noised_images = model.forward_process(images_tensor, num_steps=10)
 
-# Inverse process
-reconstructed_images = model.inverse_process(noised_images, num_steps=10)
+# # Inverse process
+# reconstructed_images = model.inverse_process(noised_images, num_steps=10)
 
-# Display original, noised, and reconstructed image
-plt.figure(figsize=(10, 4))
-plt.subplot(1, 3, 1)
-plt.title("Original")
-plt.imshow(images_tensor[0,...,0], cmap='gray')
-plt.subplot(1, 3, 2)
-plt.title("Noised")
-plt.imshow(noised_images[-1][0,...,0], cmap='gray')
-plt.subplot(1, 3, 3)
-plt.title("Reconstructed")
-plt.imshow(reconstructed_images[-1][0,...,0], cmap='gray')
-plt.show()
+# # Display original, noised, and reconstructed image
+# plt.figure(figsize=(10, 4))
+# plt.subplot(1, 3, 1)
+# plt.title("Original")
+# plt.imshow(images_tensor[0,...,0], cmap='gray')
+# plt.subplot(1, 3, 2)
+# plt.title("Noised")
+# plt.imshow(noised_images[-1][0,...,0], cmap='gray')
+# plt.subplot(1, 3, 3)
+# plt.title("Reconstructed")
+# plt.imshow(reconstructed_images[-1][0,...,0], cmap='gray')
+# plt.show()

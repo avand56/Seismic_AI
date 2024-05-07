@@ -7,14 +7,10 @@ from keras.metrics import MeanIoU
 import numpy as np
 from models.model_class import DeepLearningModels
 
-# check if GPU recognized.
-print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
-
-
-
-
 
 def train_and_evaluate_model(model, train_dataset, val_dataset, epochs=100, batch_size=32, learning_rate=1e-4, model_save_path='best_model.h5', loss='categorical_crossentropy', metrics=['accuracy'], additional_callbacks=[]):
+    # check if GPU recognized.
+    print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
     # Compile the model with specified loss, metrics, and optimizer
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
@@ -98,16 +94,16 @@ def plot_training_history(history):
 # model = DeepLearningModels('unet', input_shape, num_classes)
 # model.model.summary()
 
-def load_data():
-    # Placeholder function to load your data
-    # Replace with actual code to load your dataset
-    # Return training and validation datasets
-    return train_images, train_masks, val_images, val_masks
+# def load_data():
+#     # Placeholder function to load your data
+#     # Replace with actual code to load your dataset
+#     # Return training and validation datasets
+#     return train_images, train_masks, val_images, val_masks
 
-def preprocess_data(images, masks):
-    # Placeholder for preprocessing steps
-    # Normalize images, encode masks if necessary, etc.
-    return images / 255.0, masks
+# def preprocess_data(images, masks):
+#     # Placeholder for preprocessing steps
+#     # Normalize images, encode masks if necessary, etc.
+#     return images / 255.0, masks
 
 def train_unet(model, train_images, train_masks, val_images, val_masks, epochs=10):
     # Preprocess the data
@@ -144,14 +140,14 @@ def train_unet(model, train_images, train_masks, val_images, val_masks, epochs=1
               validation_data=(val_images, val_masks),
               epochs=epochs)
 
-# Example usage
-input_shape = (256, 256, 3)  # Example input shape
-num_classes = 3  # Number of segmentation classes
-model_instance = DeepLearningModels('unet', input_shape, num_classes)
+# # Example usage
+# input_shape = (256, 256, 3)  # Example input shape
+# num_classes = 3  # Number of segmentation classes
+# model_instance = DeepLearningModels('unet', input_shape, num_classes)
 
-# Load and preprocess data (placeholders)
-train_images, train_masks, val_images, val_masks = load_data()
+# # Load and preprocess data (placeholders)
+# train_images, train_masks, val_images, val_masks = load_data()
 
-# Train the model
-train_unet(model_instance.model, train_images, train_masks, val_images, val_masks)
+# # Train the model
+# train_unet(model_instance.model, train_images, train_masks, val_images, val_masks)
 
