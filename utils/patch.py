@@ -319,3 +319,39 @@ class SeismicProcessor3D:
 # dataset = patch_loader.dataset
 # for images, masks in dataset.take(1):
 #     print(images.shape, masks.shape)  # Check the shapes
+
+
+
+class SeismicProcessorTests:
+    def __init__(self, patch_size, stride):
+        """
+        Initialize the SeismicProcessor for test data processing.
+        :param patch_size: Tuple of two integers (height, width) for the size of the patches.
+        :param stride: Tuple of two integers (height_stride, width_stride) for the stride of the extraction.
+        """
+        self.patch_size = patch_size  # Tuple (height, width)
+        self.stride = stride  # Tuple (height_stride, width_stride)
+        
+    def extract_patches(self, volume):
+        # volume shape assumed to be (crossline, inline, depth)
+        # Adjusting logic to slice along depth and extract (128, 128) patches from crossline and inline dimensions
+        patches = []
+        depth_slices = range(volume.shape[2])  # Iterate through each depth slice
+        for z in depth_slices:
+            for i in range(0, volume.shape[0] - self.patch_size[0] + 1, self.stride[0]):
+                for j in range(0, volume.shape[1] - self.patch_size[1] + 1, self.stride[1]):
+                    patch = volume[i:i + self.patch_size[0], j:j + self.patch_size[1], z]
+                    patch = np.expand_dims(patch, axis=-1)  # Ensure it's a 3D array (128, 128, 1)
+                    patches.append(patch)
+        return np.array(patches)
+
+
+    def create_datasets(self, seismic_data, labels):
+        # Extract patches
+        image_patches = self.extract_patches(seismic_data)
+        label_patches = self.extract_patches(labels)
+        
+        # Create TensorFlow datasets
+        train_dataset = tf.data.Dataset.from_tensor_slices((image_patches, label_patches))
+        
+        return train_dataset

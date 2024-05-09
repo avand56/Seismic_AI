@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+from keras import backend as K
 
 class ConfusionMatrix(tf.keras.metrics.Metric):
     def __init__(self, num_classes, name='confusion_matrix', **kwargs):
@@ -78,3 +79,9 @@ def mean_iou(num_classes):
         return tf.reduce_mean(ious)
 
     return calc_mean_iou
+
+def dice_coefficient(y_true, y_pred, smooth=1):
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = K.sum(y_true_f * y_pred_f)
+    return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
