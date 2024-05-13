@@ -21,9 +21,8 @@ from utils.metrics import (
     class_accuracy,
     mean_class_accuracy,
     mean_iou,
-    
-    
 )
+
 from data.preprocess import TimeSeriesTFRecordReader,ImageMaskTFRecordWriter,TimeSeriesTFRecordWriter,TFRecordReader,TFRecordWriter
 from models.contrastive_learning import ContrastiveTimeSeriesModel, TimeSeriesAugmentation, Contrastive1DCNNModel
 from models.contrastive_learning import generate_pairs, contrastive_loss, augment_time_series

@@ -10,4 +10,4 @@ for epoch in range(100):  # Number of training epochs
     for sample in data:
         som_tf.train(data, 1)  # Train with one iteration for online learning
 
-# After training, you can use som_tf.weights to analyze the trained SOM.
+# After training use som_tf.weights to analyze the trained SOM.

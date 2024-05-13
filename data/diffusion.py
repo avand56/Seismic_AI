@@ -10,9 +10,9 @@ class SeismicDiffusionModel(tf.keras.Model):
         self.decoder = self._build_decoder()
 
     def _build_encoder(self):
-        # Define your encoder architecture
+        # Define encoder architecture
         return models.Sequential([
-            layers.InputLayer(input_shape=(256, 256, 1)),  # Adjust based on your data
+            layers.InputLayer(input_shape=(256, 256, 1)),  # Adjust based on data shape
             layers.Conv2D(32, kernel_size=3, strides=2, activation='relu'),
             layers.Conv2D(64, kernel_size=3, strides=2, activation='relu'),
             layers.Flatten(),
@@ -20,7 +20,7 @@ class SeismicDiffusionModel(tf.keras.Model):
         ])
 
     def _build_decoder(self):
-        # Define your decoder architecture
+        # Define decoder architecture
         return models.Sequential([
             layers.Dense(64 * 64, activation='relu'),
             layers.Reshape((64, 64, 64)),

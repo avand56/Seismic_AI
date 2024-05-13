@@ -2,7 +2,6 @@ import tensorflow as tf
 import os
 import numpy as np
 
-
 class TFRecordWriter:
     def __init__(self, filename):
         self.filename = filename
@@ -38,7 +37,6 @@ class TFRecordWriter:
 
                 tf_example = tf.train.Example(features=tf.train.Features(feature=features))
                 writer.write(tf_example.SerializeToString())
-
 
 
 class TFRecordReader:
@@ -107,6 +105,7 @@ class TimeSeriesTFRecordWriter:
                 tf_example = tf.train.Example(features=tf.train.Features(feature=features))
                 writer.write(tf_example.SerializeToString())
 
+
 class TimeSeriesTFRecordReader:
     def __init__(self, filename):
         self.filename = filename
@@ -136,6 +135,7 @@ class TimeSeriesTFRecordReader:
         raw_dataset = tf.data.TFRecordDataset(self.filename)
         parsed_dataset = raw_dataset.map(self._parse_series_function)
         return parsed_dataset.map(self.decode_series)
+
 
 class ImageMaskTFRecordWriter:
     def __init__(self, filename):
