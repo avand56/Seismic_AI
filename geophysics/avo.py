@@ -3,9 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 
-def read_seg_avo():
-# Load the SEG-Y file
-    file_path = 'path_to_segy_file.segy'
+def read_seg_avo(file_path):
+
     with segyio.open(file_path, "r") as segyfile:
         # Memory-map the file to avoid loading it all at once
         segyfile.mmap()
