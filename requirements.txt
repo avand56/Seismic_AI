@@ -131,7 +131,7 @@ sqlparse==0.5.0
 statsmodels==0.14.2
 tenacity==8.3.0
 tensorflow==2.16.1
-tensorflow-estimator==2.16.0
+tensorflow-estimator==2.15.0
 tensorboard==2.16.2
 termcolor==2.4.0
 tornado==6.4
