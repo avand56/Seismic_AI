@@ -152,16 +152,6 @@ def import_and_save_segy(directory_path, inline_byte_loc=5, crossline_byte_loc=9
 
     print(f"All files processed and saved in {directory_path}")
 
-# Example usage
-# import_and_save_segy(
-#     '/Users/vanderhoeffalex/Library/CloudStorage/OneDrive-TheBostonConsultingGroup,Inc/Desktop/F3 seismic data plus classification data for machine learning_/Penobscot_3D_gathers_part1',
-#     inline_byte_loc=5, 
-#     crossline_byte_loc=9, 
-#     starttime_correction=0
-# )
-
-
-
 
 def segy_to_npy_with_coordinates(segy_file_path, npy_file_path, npy_inline_path, npy_crossline_path):
     """
@@ -193,13 +183,6 @@ def segy_to_npy_with_coordinates(segy_file_path, npy_file_path, npy_inline_path,
     np.save(npy_crossline_path, crosslines)
     print(f"Inline numbers saved to {npy_inline_path}")
     print(f"Crossline numbers saved to {npy_crossline_path}")
-
-# # Example usage
-# segy_file_path = 'path_to_your_segy_file.segy'
-# npy_file_path = 'path_to_your_output_file.npy'
-# npy_inline_path = 'path_to_your_output_inline_file.npy'
-# npy_crossline_path = 'path_to_your_output_crossline_file.npy'
-# segy_to_npy_with_coordinates(segy_file_path, npy_file_path, npy_inline_path, npy_crossline_path)
 
 def segy_to_npy_prestack(segy_file_path, npy_file_path, npy_inline_path, npy_crossline_path, npy_azimuth_path, npy_offset_path):
     """
@@ -237,15 +220,6 @@ def segy_to_npy_prestack(segy_file_path, npy_file_path, npy_inline_path, npy_cro
     
     print(f"Data and trace header information saved:\nData: {npy_file_path}\nInlines: {npy_inline_path}\nCrosslines: {npy_crossline_path}\nAzimuths: {npy_azimuth_path}\nOffsets: {npy_offset_path}")
 
-# # Example usage
-# segy_file_path = 'path_to_your_segy_file.segy'
-# npy_file_path = 'path_to_your_output_file.npy'
-# npy_inline_path = 'path_to_your_output_inline_file.npy'
-# npy_crossline_path = 'path_to_your_output_crossline_file.npy'
-# npy_azimuth_path = 'path_to_your_output_azimuth_file.npy'
-# npy_offset_path = 'path_to_your_output_offset_file.npy'
-# segy_to_npy_prestack(segy_file_path, npy_file_path, npy_inline_path, npy_crossline_path, npy_azimuth_path, npy_offset_path)
-
 def segy_to_npy_with_manual_headers(segy_file_path, npy_file_path):
     with segyio.open(segy_file_path, "r", ignore_geometry=True) as segyfile:
         segyfile.mmap()
@@ -278,6 +252,3 @@ def segy_to_npy_with_manual_headers(segy_file_path, npy_file_path):
 
     np.save(npy_file_path, data)
     print(f"Data saved to {npy_file_path}")
-
-# Use this to manually handle and validate headers
-# segy_to_npy_with_manual_headers(segy_file_path, npy_file_path)

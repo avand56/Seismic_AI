@@ -17,16 +17,3 @@ def make_predictions_unet(model, test_data):
     # Assuming the model outputs probabilities and need the class with the highest probability
     predicted_classes = np.argmax(predictions, axis=-1)
     return predicted_classes
-
-
-#########
-# To run
-#########
-
-# test_dataset = test_dataset.batch(32)  # Adjust batch size as necessary
-
-# # Load your trained model
-# model = tf.keras.models.load_model('path_to_your_model.h5')
-
-# # Make predictions
-# predicted_lithofacies = make_predictions(model, test_dataset)

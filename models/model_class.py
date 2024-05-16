@@ -233,22 +233,3 @@ class DeepLearningModels:
         # Define the model
         model = models.Model(inputs=[input_1, input_2], outputs=merged_vector)
         return model
-
-        # model = tf.keras.Sequential([
-        #     tf.keras.layers.Input(shape=input_shape),
-        #     # Define the 2D CNN layers here
-        #     tf.keras.layers.Dense(num_classes, activation='softmax')
-        # ])
-        # return model
-
-
-# Example usage:
-model_params = {
-    'input_shape': (100, 128),  # Example shape for LSTM
-    'units': 64,
-    'num_layers': 2
-}
-# Specify the device: 'cpu', 'gpu', 'gpu0', 'gpu1', etc., or 'auto' for automatic selection.
-device = 'gpu'  # Change to 'cpu' to force using the CPU, or 'gpu' for GPU.
-model = DeepLearningModels('lstm', device=device, **model_params)
-model.model.summary()

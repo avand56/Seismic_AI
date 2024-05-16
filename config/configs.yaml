@@ -1,0 +1,12 @@
+paths:
+  training_dataset: /Users/vanderhoeffalex/Library/CloudStorage/OneDrive-TheBostonConsultingGroup,Inc/Desktop/3755060/data/train/train_seismic.npy
+  training_dataset_labels: /Users/vanderhoeffalex/Library/CloudStorage/OneDrive-TheBostonConsultingGroup,Inc/Desktop/3755060/data/test_once/test1_labels.npy
+  test_dataset1: /Users/vanderhoeffalex/Library/CloudStorage/OneDrive-TheBostonConsultingGroup,Inc/Desktop/3755060/data/test_once/test1_seismic.npy
+  test_dataset1_labels: /Users/vanderhoeffalex/Library/CloudStorage/OneDrive-TheBostonConsultingGroup,Inc/Desktop/3755060/data/test_once/test1_labels.npy
+  test_dataset2: /Users/vanderhoeffalex/Library/CloudStorage/OneDrive-TheBostonConsultingGroup,Inc/Desktop/3755060/data/test_once/test2_seismic.npy
+  test_dataset2_labels: /Users/vanderhoeffalex/Library/CloudStorage/OneDrive-TheBostonConsultingGroup,Inc/Desktop/3755060/data/test_once/test2_labels.npy
+  trained_model: /Users/vanderhoeffalex/Library/CloudStorage/OneDrive-TheBostonConsultingGroup,Inc/Desktop/3755060/data/Lithofacies_UNetV2.keras
+
+parameters:
+  batch_size: 32
+  epochs: 10

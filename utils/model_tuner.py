@@ -55,18 +55,6 @@ def tune_unet2d(input_shape, num_classes, data):
     history = best_model.fit(data['train_images'], data['train_labels'], epochs=50, validation_split=0.2)
     return best_model, history
 
-##############
-# To run tuner
-##############
-
-# Assuming 'train_images' and 'train_labels' are your datasets
-# data = {
-#     'train_images': train_images,
-#     'train_labels': train_labels
-# }
-
-# best_model, history = tune_unet2d((128, 128, 1), 6, data)
-
 
 class UNet3DHyperModel(HyperModel):
     def __init__(self, input_shape, num_classes):
@@ -129,9 +117,3 @@ def tune_unet3d(input_shape, num_classes, data):
     best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
 
     return tuner.hypermodel.build(best_hps)
-
-# Example usage
-# input_shape = (128, 128, 128, 1)  # Example shape, adjust as necessary
-# num_classes = 6  # Example number of classes
-# data = {'train': train_dataset, 'val': val_dataset}  # Placeholder for actual datasets
-# model = tune_unet3d(input_shape, num_classes, data)

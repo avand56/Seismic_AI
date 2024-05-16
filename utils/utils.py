@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from models.contrastive_learning import ContrastiveTimeSeriesModel
 import tensorflow as tf
+import yaml
 
 def tensor_length(dataset):
     # Assuming 'dataset' is  TensorFlow Dataset
@@ -75,6 +76,10 @@ def find_max_trace_length(file_path):
     stream = _read_segy(file_path)
     max_length = max(len(trace.data) for trace in stream.traces)
     return max_length
+
+def load_config(config_path):
+    with open(config_path, 'r') as file:
+        return yaml.safe_load(file)
 
 
 def preprocess_traces(file_path, max_length, padding_value=0):

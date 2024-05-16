@@ -62,22 +62,14 @@ class Contrastive1DCNNModel(tf.keras.Model):
         processed_a = self.model(inputs[:, 0, :, :])  # Process the first sequence in each pair
         processed_b = self.model(inputs[:, 1, :, :])  # Process the second sequence in each pair
         return processed_a, processed_b
-        # return self.model(inputs)
-    # def call(self, inputs):
-    #     x = inputs
-    #     for layer in self.layers_list:
-    #         x = layer(x)
-    #     return x
 
     def compile_model(self, initial_learning_rate=0.001, decay_rate=0.96):
-
         initial_learning_rate = initial_learning_rate
         lr_schedule = ExponentialDecay(
             initial_learning_rate,
             decay_steps=100000,
             decay_rate=decay_rate,
             staircase=True)
-
         optimizer = Adam(learning_rate=lr_schedule)
         self.compile(optimizer=optimizer, loss=contrastive_loss)  # Define the appropriate contrastive loss
 
@@ -674,51 +666,3 @@ def generate_pairs(data, num_pairs=1000, positive_ratio=0.5):
     labels = np.array(labels)
 
     return pairs, labels
-
-# Example: Compute similarity matrix
-# embeddings = get_embeddings(model, data_for_prediction)
-# similarity_matrix = cosine_similarity(embeddings)
-
-
-
-###############
-# run model
-###############
-                
-# Assuming `parsed_dataset` is your dataset loaded and parsed from TFRecords
-# window_size = 50
-# step_size = 25
-# num_negative_pairs = 2  # Example: For each positive pair, generate 2 negative pairs
-
-# Generate the dataset of pairs
-# pairs_dataset = model.generate_contrastive_pairs(parsed_dataset, window_size, step_size, num_negative_pairs, augmentation_func=model.simple_augmentation)
-
-
-# Convert to tf.data.Dataset
-#dataset = tf.data.Dataset.from_tensor_slices((pairs, labels))
-
-# Assuming `train_dataset` is a tf.data.Dataset object that yields ([time_series_1, time_series_2], similarity_label) pairs
-# model.train(train_dataset, epochs=10, batch_size=32)
-
-
-
-
-
-
-#####################
-# working with spatial
-######################
-
-# data = [...]  # Your dataset
-# spatial_metadata = [(lat, lon) for lat, lon in zip(lats, lons)]  # List of (latitude, longitude)
-
-# # Prepare the dataset with spatial metadata
-# dataset_with_metadata = prepare_dataset_with_metadata(data, spatial_metadata)
-
-# # After processing (e.g., anomaly detection), assuming you have anomalies_indices
-# anomalies_indices = [...]  # Indices of detected anomalies
-# anomalies_locations = map_anomalies_to_locations(anomalies_indices, dataset_with_metadata)
-
-# # Or, if you performed clustering and have cluster_assignments
-# cluster_assignments = [...]  # Cluster assignments for each data point
-# clusters_locations = map_clusters_to_locations(cluster_assignments, dataset_with_metadata)

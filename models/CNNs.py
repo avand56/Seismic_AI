@@ -298,10 +298,7 @@ class ResNetSegmentation(models.Model):
         plt.tight_layout()
         plt.show()
 
-
-
-
-###########
+##############
 # command line
 ##############
 # def load_dataset(dataset_path, test_size=0.2):

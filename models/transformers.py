@@ -84,8 +84,6 @@ class TimeSeriesTransformer(tf.keras.Model):
         
         return history
 
-
-
 #########
 # to run
 #########    
@@ -100,9 +98,8 @@ class TimeSeriesTransformer(tf.keras.Model):
 # max_length = 100  # Maximum length of the time series sequences
 
 
-
 # model = TimeSeriesTransformer(num_features, model_dim, num_heads, num_encoder_layers, num_classes, dropout_rate, max_length)
-# model.build(input_shape=(None, max_length, num_features))  # Example input shape
+# model.build(input_shape=(None, max_length, num_features))  # input shape
 # model.summary()
 
 # optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)

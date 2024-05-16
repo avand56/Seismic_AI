@@ -2,7 +2,6 @@ import sys
 import importlib
 from os import path
 # Add a directory to the search path
-sys.path.append('/Users/vanderhoeffalex/Library/CloudStorage/OneDrive-TheBostonConsultingGroup,Inc/Desktop/Seismic_AI')
 from utils.utils import (
     preprocess_traces,
     find_max_trace_length,

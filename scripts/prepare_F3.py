@@ -190,7 +190,7 @@ def split_patch_train_val(
     return train_list, val_list
 
 
-def split_alaudah_et_al_19(
+def split_aladeuh_method(
     data_dir, patch_stride, patch_size, fraction_validation=0.2, loader_type="patch", log_config=None
 ):
     """Generate train and validation files (with overlap) for Netherlands F3 dataset.

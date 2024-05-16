@@ -1,4 +1,3 @@
-
 import tensorflow as tf
 from keras.preprocessing.image import ImageDataGenerator
 from keras.optimizers import Adam
@@ -54,57 +53,6 @@ def plot_training_history(history):
     plt.show()
 
 
-# # Assume `model` is an instance of TimeSeriesTransformer or another compatible model
-# # Assume `train_dataset` and `val_dataset` are prepared tf.data.Dataset objects for training and validation
-
-# # Train the model
-# history = train_and_evaluate_model(model, train_dataset, val_dataset, epochs=100, batch_size=32, learning_rate=1e-4, model_save_path='best_time_series_transformer_model.h5')
-
-# # Plot the training history
-# plot_training_history(history)
-
-
-##################################
-# Train Contrastive Learning - 1D
-#################################
-
-# Assume `pairs` is your input data and `labels` indicates if pairs are similar (1) or not (0)
-# model = create_contrastive_model(input_shape)
-# model.compile(optimizer='adam', loss=contrastive_loss)
-# model.fit([pairs[:, 0], pairs[:, 1]], labels, epochs=10)
-
-
-##################################
-# Train Contrastive Learning - 2D
-#################################
-
-# Assume `pairs` is your input data (pairs of images) and `labels` indicates if pairs are similar (1) or not (0)
-# input_shape should match the dimensions of your images, e.g., (height, width, channels)
-# model = create_contrastive_2d_model(input_shape)
-# model.compile(optimizer='adam', loss=contrastive_loss)
-# model.fit([pairs[:, 0], pairs[:, 1]], labels, epochs=10, batch_size=32)
-
-
-######################
-# U-Net
-#############
-# Example usage:
-# input_shape = (256, 256, 3)  # Example input shape, change as needed
-# num_classes = 3  # Example number of segmentation classes, change as needed
-# model = DeepLearningModels('unet', input_shape, num_classes)
-# model.model.summary()
-
-# def load_data():
-#     # Placeholder function to load your data
-#     # Replace with actual code to load your dataset
-#     # Return training and validation datasets
-#     return train_images, train_masks, val_images, val_masks
-
-# def preprocess_data(images, masks):
-#     # Placeholder for preprocessing steps
-#     # Normalize images, encode masks if necessary, etc.
-#     return images / 255.0, masks
-
 def train_unet(model, train_images, train_masks, val_images, val_masks, epochs=10):
     # Preprocess the data
     train_images, train_masks = preprocess_data(train_images, train_masks)
@@ -139,15 +87,3 @@ def train_unet(model, train_images, train_masks, val_images, val_masks, epochs=1
               steps_per_epoch=len(train_images) // 32,  # assuming batch_size of 32
               validation_data=(val_images, val_masks),
               epochs=epochs)
-
-# # Example usage
-# input_shape = (256, 256, 3)  # Example input shape
-# num_classes = 3  # Number of segmentation classes
-# model_instance = DeepLearningModels('unet', input_shape, num_classes)
-
-# # Load and preprocess data (placeholders)
-# train_images, train_masks, val_images, val_masks = load_data()
-
-# # Train the model
-# train_unet(model_instance.model, train_images, train_masks, val_images, val_masks)
-

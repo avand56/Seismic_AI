@@ -116,30 +116,3 @@ def detect_anomalous_avo_classes(gradients, intercepts, gradient_thresholds, int
     avo_classes[class4] = 4
     
     return avo_classes
-
-# # Example thresholds
-# gradient_thresholds = {
-#     'class1': 0.2,  # High positive gradients
-#     'class2_lower': 0,  # Lower bound for near-zero gradient
-#     'class2_upper': 0.1,  # Upper bound for near-zero gradient
-#     'class3': 0.2,  # High negative gradients
-#     'class4': 0.2   # High positive gradients for Class 4
-# }
-# intercept_thresholds = {
-#     'class1': 0.3,  # High intercepts for Class 1
-#     'class2': 0.3,  # High intercepts for Class 2
-#     'class3': 0.3,  # High intercepts for Class 3
-#     'class4': 0     # Near-zero or negative intercepts for Class 4
-# }
-
-# # Using the function
-# avo_classes = detect_anomalous_avo_classes(gradients, intercepts, gradient_thresholds, intercept_thresholds)
-
-# # Visualization
-# plt.imshow(avo_classes, aspect='auto', cmap='viridis')
-# plt.colorbar(label='AVO Class')
-# plt.title('Anomalous AVO Class Distribution')
-# plt.xlabel('Trace')
-# plt.ylabel('Depth/Sample Index')
-# plt.show()
-
